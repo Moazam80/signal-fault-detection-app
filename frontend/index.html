@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Signal Fault Diagnostic System</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">&#9881;</div>
+      <div>
+        <h1>Intelligent Signal Fault Diagnostic System</h1>
+        <p>KNN Machine Learning | Vibration Analysis | AI-Powered Explanation</p>
+      </div>
+    </div>
+  </header>
+  <main>
+    <!-- TABS -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="upload">&#128194; Upload Signal</button>
+      <button class="tab-btn"        data-tab="generate">&#127917; Signal Generator</button>
+    </div>
+
+    <!-- UPLOAD TAB -->
+    <section class="card tab-panel active" id="tab-upload">
+      <h2>Upload a Vibration Signal</h2>
+      <div id="drop-zone" class="drop-zone">
+        <span class="drop-icon">&#128194;</span>
+        <p>Drag &amp; drop a <strong>.csv</strong> or <strong>.mat</strong> file here</p>
+        <p class="muted">or</p>
+        <label class="btn-upload" for="file-input">Browse File</label>
+        <input type="file" id="file-input" accept=".csv,.mat" hidden/>
+        <p id="file-name" class="muted small"></p>
+      </div>
+      <div class="fs-row">
+        <label for="fs-input">Sampling Frequency (Hz)</label>
+        <input id="fs-input" type="number" value="1000" min="1" step="1"/>
+        <span class="fs-hint">Required for single-column CSV and MAT files. Auto-detected from two-column (Time, Acceleration) CSV.</span>
+      </div>
+      <button class="btn-primary" id="analyse-btn" disabled>&#128269; Analyse Signal</button>
+      <div class="demo-row">
+        <span class="muted small">Quick demo:</span>
+        <button class="btn-demo" data-class="Normal">Normal</button>
+        <button class="btn-demo" data-class="High Vibration">High Vibration</button>
+        <button class="btn-demo" data-class="Harmonic Fault">Harmonic Fault</button>
+        <button class="btn-demo" data-class="Impulsive Fault">Impulsive Fault</button>
+      </div>
+    </section>
+
+    <!-- GENERATOR TAB -->
+    <section class="card tab-panel" id="tab-generate">
+      <h2>&#127917; Virtual Vibration Signal Generator</h2>
+      <p class="muted" style="margin-bottom:1.2rem">
+        Generates a synthetic machine vibration signal identical to the MATLAB Step 6A generator.
+        Download the CSV and upload it in the Upload tab, or classify it directly here.
+      </p>
+      <div class="gen-form">
+        <label class="gen-label">Select fault condition:</label>
+        <div class="gen-btn-group">
+          <button class="gen-class-btn active" data-class="Normal">&#9989; Normal</button>
+          <button class="gen-class-btn" data-class="High Vibration">&#9888; High Vibration</button>
+          <button class="gen-class-btn" data-class="Harmonic Fault">&#128260; Harmonic Fault</button>
+          <button class="gen-class-btn" data-class="Impulsive Fault">&#128165; Impulsive Fault</button>
+        </div>
+        <div class="gen-actions">
+          <button class="btn-primary gen-inline" id="gen-classify-btn">&#128269; Generate &amp; Classify</button>
+          <button class="btn-secondary" id="gen-download-btn">&#11015; Download CSV</button>
+        </div>
+        <p class="muted small" style="margin-top:0.6rem">Fs = 1000 Hz | Duration = 2 s | Fundamental = 40-70 Hz (random)</p>
+      </div>
+    </section>
+
+    <!-- LOADING -->
+    <section id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Analysing signal...</p>
+    </section>
+
+    <!-- RESULT PANEL -->
+    <section class="card hidden" id="result-card">
+      <div id="verdict-banner" class="verdict-banner">
+        <span id="verdict-icon" style="font-size:2rem">&#9989;</span>
+        <div>
+          <div class="muted small upper">Predicted Condition</div>
+          <div id="verdict-class" style="font-size:1.4rem;font-weight:700;margin-top:2px">--</div>
+        </div>
+        <div id="urgency-badge" class="urgency-badge">--</div>
+      </div>
+      <div id="signal-info" class="info-row"></div>
+      <div id="warnings-box" class="warnings-box hidden"></div>
+      <h3>&#128202; Extracted Features</h3>
+      <table class="feature-table">
+        <thead><tr><th>Feature</th><th>Value</th></tr></thead>
+        <tbody id="feature-rows"></tbody>
+      </table>
+      <h3>&#128200; Classifier Scores</h3>
+      <div id="score-bars"></div>
+      <h3>&#128269; Rule-Based Interpretation</h3>
+      <ul id="observations-list"></ul>
+      <div class="ai-section">
+        <h3>&#129302; AI Agent Explanation</h3>
+        <p id="ai-explanation"></p>
+        <h4>Recommended Actions</h4>
+        <ol id="ai-actions"></ol>
+        <p id="ai-unavailable" class="muted small hidden" style="font-style:italic">AI explanation unavailable -- set GEMINI_API_KEY to enable.</p>
+      </div>
+      <div style="display:flex;gap:0.8rem;margin-top:1.4rem;flex-wrap:wrap">
+        <button class="btn-secondary" id="reset-btn">&#128260; Analyse Another Signal</button>
+        <button class="btn-secondary hidden" id="download-result-csv-btn">&#11015; Download This Signal CSV</button>
+      </div>
+    </section>
+  </main>
+  <footer><p>Hackathon Project -- Intelligent Signal Fault Detection | KNN + Gemini</p></footer>
+  <script src="app.js"></script>
+</body>
+</html>

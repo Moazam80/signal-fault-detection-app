@@ -1,0 +1,37 @@
+====================================================
+ INTELLIGENT SIGNAL FAULT DIAGNOSTIC SYSTEM
+ Hackathon Demo v1.0
+====================================================
+
+QUICK START
+-----------
+1. Double-click SignalFaultDiagnostic.exe
+2. A browser window opens automatically at:
+   http://localhost:8000/app
+
+3. Use the app:
+   - Upload Tab  : drag & drop a CSV or MAT signal file
+   - Generator Tab: pick a fault type, generate & classify,
+                    or download a CSV to test the Upload tab
+
+SUPPORTED INPUT FILES
+---------------------
+- CSV with one column   : amplitude values (enter Fs manually)
+- CSV with two columns  : Time, Acceleration (Fs auto-detected)
+  (including MATLAB Step 6A exported files)
+- MAT files             : any numeric 1-D vector (enter Fs manually)
+
+OPTIONAL - AI EXPLANATIONS (Gemini)
+-------------------------------------
+Set the environment variable before launching:
+  GEMINI_API_KEY=your-key-here
+
+Then double-click the EXE. The AI explanation panel
+will show natural-language diagnostics and urgency ratings.
+
+NOTES
+-----
+- No Python installation required on the target machine.
+- First launch takes ~5 seconds to extract the runtime.
+- The app runs locally -- no internet required (except for AI).
+- Port 8000 must be free. Close any other apps using it.
