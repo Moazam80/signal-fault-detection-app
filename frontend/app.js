@@ -1,5 +1,5 @@
 
-const API = "http://localhost:8000";
+const API = "https://signal-fault-detection-app.onrender.com";
 const dropZone   = document.getElementById("drop-zone");
 const fileInput  = document.getElementById("file-input");
 const fileNameEl = document.getElementById("file-name");
