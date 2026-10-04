@@ -1,9 +1,8 @@
-﻿import io, tempfile
+﻿import io, tempfile, csv
 from pathlib import Path
 from typing import Optional
 
 import numpy as np
-import pandas as pd
 import scipy.io
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -80,31 +79,82 @@ def generate_signal_csv(class_name: str):
 
 
 def _read_csv(contents: bytes, fs):
-    first_line = contents.decode(errors="replace").split("\n")[0].strip()
-    has_header = False
+    text = contents.decode(errors="replace")
+    rows = list(csv.reader(io.StringIO(text)))
+
+    if not rows:
+        raise HTTPException(422, "Empty CSV file.")
+
+    # Remove completely empty rows
+    rows = [row for row in rows if any(cell.strip() for cell in row)]
+
+    if not rows:
+        raise HTTPException(422, "CSV contains no data.")
+
+    # Detect whether first row is a header
     try:
-        [float(v) for v in first_line.split(",") if v.strip()]
+        [float(v.strip()) for v in rows[0] if v.strip()]
+        has_header = False
     except ValueError:
         has_header = True
-    df = pd.read_csv(io.BytesIO(contents), header=0 if has_header else None)
-    data = df.dropna(how="all").to_numpy(dtype=float)
-    data = data[:, np.any(np.isfinite(data), axis=0)]
-    if data.shape[1] == 1:
-        x = data[:, 0]
+
+    if has_header:
+        rows = rows[1:]
+
+    data = []
+
+    for row in rows:
+        try:
+            values = [float(v.strip()) for v in row if v.strip()]
+            if values:
+                data.append(values)
+        except ValueError:
+            continue
+
+    if not data:
+        raise HTTPException(422, "Cannot parse CSV data.")
+
+    # Make sure all rows have usable numeric values
+    max_cols = max(len(row) for row in data)
+    columns = [[] for _ in range(max_cols)]
+
+    for row in data:
+        for i, value in enumerate(row):
+            columns[i].append(value)
+
+    if len(columns) == 1:
+        x = np.asarray(columns[0], dtype=float)
+
         if not fs or fs <= 0:
-            raise HTTPException(422, "1-column CSV detected. Please provide Fs (Hz).")
-    elif data.shape[1] >= 2:
-        t_col, x = data[:, 0], data[:, 1]
+            raise HTTPException(
+                422,
+                "1-column CSV detected. Please provide Fs (Hz)."
+            )
+
+    elif len(columns) >= 2:
+        t_col = np.asarray(columns[0], dtype=float)
+        x = np.asarray(columns[1], dtype=float)
+
         ok = np.isfinite(t_col) & np.isfinite(x)
-        t_col, x = t_col[ok], x[ok]
+        t_col = t_col[ok]
+        x = x[ok]
+
         if len(t_col) < 2:
             raise HTTPException(422, "Not enough valid samples.")
+
         dt = float(np.median(np.diff(t_col)))
+
         if dt <= 0:
-            raise HTTPException(422, "Time column must be increasing.")
+            raise HTTPException(
+                422,
+                "Time column must be increasing."
+            )
+
         fs = 1.0 / dt
+
     else:
         raise HTTPException(422, "Cannot parse CSV structure.")
+
     return x, fs
 
 
